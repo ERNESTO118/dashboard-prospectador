@@ -1,66 +1,47 @@
 import streamlit as st
-import time
+from supabase import create_client, Client
+from apify_client import ApifyClient
 
-# --- Configuración de la Página ---
-st.set_page_config(
-    page_title="Prospectador IA",
-    page_icon="🤖",
-    layout="centered"
-)
-
-# --- Título Principal ---
-st.title("🤖 Panel de Control - Prospectador IA")
-st.markdown("---")
-
-# --- Formulario para Crear Campaña ---
-st.header("🚀 Crear Nueva Campaña en Google Maps")
-st.write("Rellena los siguientes campos para que nuestro Cazador se ponga a trabajar.")
-
-# Usamos un formulario para agrupar los inputs y el botón
-with st.form(key="campaign_form"):
-    # Campo 1: ¿Qué negocio? (El cuestionario del cliente)
-    tipo_negocio = st.text_input(
-        label="¿Qué tipo de negocio buscas?",
-        placeholder="Ej: Restaurantes veganos, talleres mecánicos..."
-    )
-
-    # Campo 2: ¿Dónde?
-    ciudad_pais = st.text_input(
-        label="¿En qué ciudad y país?",
-        placeholder="Ej: Lima, Perú; Madrid, España..."
-    )
-
-    # Campo 3: ¿Cuántos?
-    cantidad_prospectos = st.number_input(
-        label="¿Cuántos prospectos quieres encontrar? (Máx. 500)",
-        min_value=10,
-        max_value=500,
-        value=50, # Valor por defecto
-        step=10
-    )
-
-    # Botón de envío del formulario
-    submit_button = st.form_submit_button(label="🔎 Iniciar Búsqueda")
-
-# --- Lógica que se ejecuta al presionar el botón ---
-if submit_button:
-    # Verificamos que los campos importantes estén llenos
-    if tipo_negocio and ciudad_pais:
-        st.success(f"¡Orden recibida! El Cazador ha sido enviado.")
+# --- 1. FUNCIÓN PARA CARGAR LAS LLAVES DESDE SUPABASE ---
+# Esta función se conecta a Supabase para leer nuestra propia tabla de "Secrets".
+# Nota: Las credenciales para leer esta tabla SÍ las ponemos aquí, pero son de bajo riesgo.
+@st.cache_resource
+def cargar_secretos():
+    url = "TU_URL_DE_SUPABASE"  # Reemplaza con tu URL
+    key = "TU_LLAVE_ANON_DE_SUPABASE" # Reemplaza con tu llave anon
+    
+    try:
+        supabase_client = create_client(url, key)
+        response = supabase_client.table('configuracion').select('nombre_clave, valor_clave').execute()
         
-        # Mostramos un resumen de la misión para el cliente
-        with st.expander("Ver detalles de la misión"):
-            st.write(f"**Objetivo:** {tipo_negocio}")
-            st.write(f"**Ubicación:** {ciudad_pais}")
-            st.write(f"**Límite:** {cantidad_prospectos} prospectos")
+        # Convertimos la lista de la base de datos en un diccionario fácil de usar
+        secretos = {item['nombre_clave']: item['valor_clave'] for item in response.data}
+        st.success("¡Configuración secreta cargada desde Supabase!")
+        return secretos
+    except Exception as e:
+        st.error(f"No se pudo cargar la configuración desde Supabase: {e}")
+        return None
 
-        # Simulamos que el sistema está trabajando (en el futuro, esto llamará al Orquestador)
-        with st.spinner("El Orquestador está asignando la tarea al Cazador..."):
-            time.sleep(3) # Simulamos una espera de 3 segundos
-        
-        st.info("¡El Cazador ya está en el campo! Te notificaremos cuando la misión haya finalizado.")
-        st.balloons()
+# --- 2. CARGAMOS LOS SECRETOS AL INICIAR LA APP ---
+SECRETS = cargar_secretos()
 
-    else:
-        # Si faltan datos, mostramos un error
-        st.error("Por favor, rellena al menos el tipo de negocio y la ciudad.")
+# --- 3. CUERPO PRINCIPAL DE LA APLICACIÓN ---
+st.title("🤖 Panel de Control - Prospectador IA (v2)")
+
+if SECRETS: # Solo mostramos el formulario si los secretos se cargaron bien
+    with st.form(key="campaign_form"):
+        tipo_negocio = st.text_input("¿Qué tipo de negocio buscas?")
+        ciudad_pais = st.text_input("¿En qué ciudad y país?")
+        cantidad_prospectos = st.number_input("¿Cuántos prospectos?", 10, 500, 50)
+        submit_button = st.form_submit_button("🔎 Iniciar Búsqueda")
+
+    if submit_button:
+        if tipo_negocio and ciudad_pais:
+            st.info("Orden recibida. Preparando la misión...")
+            # Aquí irá la lógica para llamar al Cazador usando los SECRETS cargados.
+            st.write(f"Misión: Buscar {cantidad_prospectos} '{tipo_negocio}' en '{ciudad_pais}'.")
+            st.warning("Funcionalidad de caza real aún no implementada en esta versión.")
+        else:
+            st.error("Por favor, rellena el tipo de negocio y la ciudad.")
+else:
+    st.error("La aplicación no puede funcionar sin cargar la configuración. Revisa las credenciales en el código.")
