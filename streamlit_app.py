@@ -2,19 +2,19 @@ import streamlit as st
 from supabase import create_client, Client
 from apify_client import ApifyClient
 
-# --- 1. FUNCIÓN PARA CARGAR LAS LLAVES DESDE SUPABASE ---
-# Esta función se conecta a Supabase para leer nuestra propia tabla de "Secrets".
-# Nota: Las credenciales para leer esta tabla SÍ las ponemos aquí, pero son de bajo riesgo.
+# --- FUNCIÓN PARA CARGAR LAS LLAVES DESDE SUPABASE ---
+# Esta es nuestra propia versión de los "Secrets".
 @st.cache_resource
 def cargar_secretos():
-    url = "TU_URL_DE_SUPABASE"  # Reemplaza con tu URL
-    key = "TU_LLAVE_ANON_DE_SUPABASE" # Reemplaza con tu llave anon
+    # Estas dos llaves las ponemos aquí porque son necesarias para leer las demás.
+    # Son las credenciales de "solo lectura", de bajo riesgo.
+    url_publica = "https://lgtihtfyndnfkbuwfbxo.supabase.co"
+    key_publica = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxndGlodGZ5bmRuZmtidXdmYnhvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU5OTg4MjIsImV4cCI6MjA3MTU3NDgyMn0.K4igC3AgVkrmO6EDJDY9L_T-etecDTEXpmKfPimUE-g"
     
     try:
-        supabase_client = create_client(url, key)
-        response = supabase_client.table('configuracion').select('nombre_clave, valor_clave').execute()
+        supabase_para_secretos = create_client(url_publica, key_publica)
+        response = supabase_para_secretos.table('configuracion').select('nombre_clave, valor_clave').execute()
         
-        # Convertimos la lista de la base de datos en un diccionario fácil de usar
         secretos = {item['nombre_clave']: item['valor_clave'] for item in response.data}
         st.success("¡Configuración secreta cargada desde Supabase!")
         return secretos
@@ -22,10 +22,10 @@ def cargar_secretos():
         st.error(f"No se pudo cargar la configuración desde Supabase: {e}")
         return None
 
-# --- 2. CARGAMOS LOS SECRETOS AL INICIAR LA APP ---
+# --- CARGAMOS LOS SECRETOS AL INICIAR LA APP ---
 SECRETS = cargar_secretos()
 
-# --- 3. CUERPO PRINCIPAL DE LA APLICACIÓN ---
+# --- CUERPO PRINCIPAL DE LA APLICACIÓN ---
 st.title("🤖 Panel de Control - Prospectador IA (v2)")
 
 if SECRETS: # Solo mostramos el formulario si los secretos se cargaron bien
@@ -37,11 +37,19 @@ if SECRETS: # Solo mostramos el formulario si los secretos se cargaron bien
 
     if submit_button:
         if tipo_negocio and ciudad_pais:
-            st.info("Orden recibida. Preparando la misión...")
-            # Aquí irá la lógica para llamar al Cazador usando los SECRETS cargados.
+            st.info("Orden recibida. Misión en curso...")
+            
+            # --- Aquí irá la lógica para llamar al Cazador ---
+            # Por ahora, solo mostramos que hemos recibido la orden y los secretos.
             st.write(f"Misión: Buscar {cantidad_prospectos} '{tipo_negocio}' en '{ciudad_pais}'.")
-            st.warning("Funcionalidad de caza real aún no implementada en esta versión.")
+            
+            # Verificamos que hemos leído la API_KEY correctamente
+            if 'APIFY_KEY' in SECRETS:
+                st.success("La llave de Apify se ha cargado correctamente.")
+            else:
+                st.error("No se encontró la llave de Apify en la configuración.")
+                
         else:
             st.error("Por favor, rellena el tipo de negocio y la ciudad.")
 else:
-    st.error("La aplicación no puede funcionar sin cargar la configuración. Revisa las credenciales en el código.")
+    st.error("La aplicación no puede funcionar sin cargar la configuración.")
