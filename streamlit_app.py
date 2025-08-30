@@ -9,8 +9,8 @@ st.set_page_config(page_title="Prospectador IA", page_icon="🤖", layout="cente
 # --- CARGA DE SECRETOS (Nuestra caja fuerte personalizada) ---
 @st.cache_resource
 def cargar_secretos():
-    url_publica = "TU_URL_DE_SUPABASE"  # Reemplaza con tu URL
-    key_publica = "TU_LLAVE_ANON_DE_SUPABASE" # Reemplaza con tu llave anon
+    url_publica = "https://lgtihtfyndnfkbuwfbxo.supabase.co"  # Reemplaza con tu URL
+    key_publica = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxndGlodGZ5bmRuZmtidXdmYnhvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU5OTg4MjIsImV4cCI6MjA3MTU3NDgyMn0.K4igC3AgVkrmO6EDJDY9L_T-etecDTEXpmKfPimUE-g" # Reemplaza con tu llave anon
     try:
         supabase_para_secretos = create_client(url_publica, key_publica)
         response = supabase_para_secretos.table('configuracion').select('nombre_clave, valor_clave').execute()
