@@ -1,6 +1,6 @@
 import streamlit as st
 from supabase import create_client, Client
-
+import json
 # --- CARGA DE SECRETOS (Nuestra caja fuerte personalizada) ---
 @st.cache_resource
 def cargar_secretos():
