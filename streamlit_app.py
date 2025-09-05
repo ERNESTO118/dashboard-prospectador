@@ -4,7 +4,7 @@ from supabase import create_client, Client
 # --- CARGA DE SECRETOS (Nuestra caja fuerte personalizada) ---
 @st.cache_resource
 def cargar_secretos():
-    url_publica = "https://lgtihfyndnfkbuwfbxo.supabase.co"
+    url_publica = "https://lgtihtfyndnfkbuwfbxo.supabase.co"
     key_publica = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxndGlodGZ5bmRuZmtidXdmYnhvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU5OTg4MjIsImV4cCI6MjA3MTU3NDgyMn0.K4igC3AgVkrmO6EDJDY9L_T-etecDTEXpmKfPimUE-g"
     try:
         supabase_para_secretos = create_client(url_publica, key_publica)
