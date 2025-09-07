@@ -5,6 +5,7 @@ from supabase import create_client
 # --- CARGA DE SECRETOS ---
 @st.cache_resource
 def cargar_secretos():
+    # Estas son las llaves públicas para LEER la tabla de configuración
     url_publica = "https://lgtihtfyndnfkbuwfbxo.supabase.co"
     key_publica = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxndGlodGZ5bmRuZmtidXdmYnhvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU5OTg4MjIsImV4cCI6MjA3MTU3NDgyMn0.K4igC3AgVkrmO6EDJDY9L_T-etecDTEXpmKfPimUE-g"
     try:
@@ -38,16 +39,15 @@ if SECRETS:
         if que_vendes and cliente_ideal and ciudad_pais:
             st.info("Recibiendo orden... contactando a la base de datos...")
             try:
+                # Usamos las llaves que leímos de la tabla 'configuracion'
                 supabase = create_client(SECRETS['SUPABASE_URL'], SECRETS['SUPABASE_KEY'])
                 
                 nueva_campana = {
                     'cliente_id': 1,
                     'nombre_campana': f"Campaña: {cliente_ideal} en {ciudad_pais}",
                     'criterio_busqueda': json.dumps({
-                        "que_vendes": que_vendes,
-                        "cliente_ideal": cliente_ideal,
-                        "ubicacion": ciudad_pais,
-                        "cantidad": cantidad_prospectos
+                        "que_vendes": que_vendes, "cliente_ideal": cliente_ideal,
+                        "ubicacion": ciudad_pais, "cantidad": cantidad_prospectos
                     }),
                     'estado_campana': 'pendiente'
                 }
