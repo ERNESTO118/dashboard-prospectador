@@ -1,6 +1,6 @@
 import streamlit as st
 import json
-from postgrest import APIClient, APIResponse
+from postgrest import PostgrestClient # ¡CORRECCIÓN!
 import os
 
 # --- CARGA DE SECRETOS (Simplificado) ---
@@ -10,7 +10,7 @@ def cargar_secretos():
     key_publica = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxndGlodGZ5bmRuZmtidXdmYnhvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU5OTg4MjIsImV4cCI6MjA3MTU3NDgyMn0.K4igC3AgVkrmO6EDJDY9L_T-etecDTEXpmKfPimUE-g"
     try:
         # Usamos Postgrest para leer la configuración
-        with APIClient(base_url=url_publica, headers={"apikey": key_publica}) as client:
+        with PostgrestClient(base_url=url_publica, headers={"apikey": key_publica}) as client: # ¡CORRECCIÓN!
             response = client.from_("configuracion").select("nombre_clave, valor_clave").execute()
         secretos = {item['nombre_clave']: item['valor_clave'] for item in response.data}
         return secretos
@@ -27,7 +27,6 @@ if SECRETS:
     st.success("¡Configuración secreta cargada!")
     
     with st.form(key="campaign_form"):
-        # ... (campos del formulario) ...
         que_vendes = st.text_input("1. ¿Qué producto o servicio vendes?")
         cliente_ideal = st.text_input("2. ¿Cuál es tu cliente ideal?")
         ciudad_pais = st.text_input("3. ¿En qué ciudad y país quieres buscar?")
@@ -37,7 +36,7 @@ if SECRETS:
     if submit_button:
         try:
             # Usamos Postgrest para escribir la campaña
-            with APIClient(base_url=SECRETS['SUPABASE_URL'], headers={"apikey": SECRETS['SUPABASE_KEY']}) as client:
+            with PostgrestClient(base_url=SECRETS['SUPABASE_URL'], headers={"apikey": SECRETS['SUPABASE_KEY']}) as client: # ¡CORRECCIÓN!
                 nueva_campana = {
                     'cliente_id': 1, 'nombre_campana': f"Campaña: {cliente_ideal}",
                     'criterio_busqueda': json.dumps({
